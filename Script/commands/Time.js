@@ -5,15 +5,19 @@ const GIFEncoder = require("gifencoder");
 
 module.exports.config = {
  name: "time",
- version: "5.0",
+ version: "5.1",
  hasPermssion: 0,
- credits: "Rahat Bot",
- description: "Beautiful neon-style date/time generator",
+ credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
+ description: "Beautiful date/time generator",
  commandCategory: "Info",
  cooldowns: 1
 };
 
 module.exports.run = async function ({ api, event }) {
+
+api.sendMessage("⏳𝐏𝐥𝐞𝐚𝐬𝐞 𝐰𝐚𝐢𝐭...", event.threadID);
+
+setTimeout(() => {
 
 const now = moment.tz("Asia/Dhaka");
 
@@ -35,14 +39,13 @@ encoder.createReadStream().pipe(fs.createWriteStream(path));
 encoder.start();
 encoder.setRepeat(0);
 encoder.setDelay(90);
-encoder.setQuality(10);
+encoder.setQuality(20);
 
 for (let i = 0; i < 40; i++) {
 
 let hue = i * 9;
 let color = `hsl(${hue},100%,50%)`;
 
-// Background gradient
 let gradient = ctx.createRadialGradient(
  WIDTH/2, HEIGHT/2, 100,
  WIDTH/2, HEIGHT/2, 600
@@ -54,7 +57,6 @@ gradient.addColorStop(1, "#000000");
 ctx.fillStyle = gradient;
 ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-// Outer neon glow frame
 ctx.shadowColor = color;
 ctx.shadowBlur = 40;
 ctx.lineWidth = 15;
@@ -63,23 +65,19 @@ ctx.strokeRect(40, 40, WIDTH - 80, HEIGHT - 80);
 
 ctx.shadowBlur = 0;
 
-// TIME
 ctx.font = "110px Arial Black";
 ctx.fillStyle = "#FFFFFF";
 ctx.textAlign = "center";
 ctx.fillText(time, WIDTH / 2, 220);
 
-// DAY
 ctx.font = "80px Arial Black";
 ctx.fillStyle = color;
 ctx.fillText(day.toUpperCase(), WIDTH / 2, 330);
 
-// DATE
 ctx.font = "45px Arial";
 ctx.fillStyle = "#CFCFCF";
 ctx.fillText(date, WIDTH / 2, 400);
 
-// Calendar
 ctx.font = "38px Arial";
 const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
@@ -93,7 +91,6 @@ days.forEach(d => {
  x += 110;
 });
 
-// Dates
 let firstDay = now.clone().startOf("month").day();
 let totalDays = now.daysInMonth();
 
@@ -136,7 +133,6 @@ ctx.font = "40px Arial Black";
 ctx.fillStyle = color;
 ctx.shadowColor = color;
 ctx.shadowBlur = 25;
-
 ctx.fillText("Rahat Bot", WIDTH / 2, HEIGHT - 70);
 
 ctx.shadowBlur = 0;
@@ -148,8 +144,7 @@ encoder.finish();
 
 setTimeout(() => {
 
-api.sendMessage(
-{
+api.sendMessage({
  body: `⏱️ সময় ${time}\n🗓️ তারিখ ${date}`,
  attachment: fs.createReadStream(path)
 },
@@ -157,6 +152,8 @@ event.threadID,
 () => fs.unlinkSync(path)
 );
 
-}, 1000);
+}, 800);
+
+}, 0);
 
 };
