@@ -8,16 +8,18 @@ module.exports.config = {
  version: "5.0",
  hasPermssion: 0,
  credits: "Rahat Bot",
- description: "Neon Calendar Time GIF",
+ description: "Beautiful neon-style date/time generator",
  commandCategory: "Info",
  cooldowns: 1
 };
 
 module.exports.run = async function ({ api, event }) {
 
-const date = moment.tz("Asia/Dhaka").format("DD MMMM YYYY");
-const time = moment.tz("Asia/Dhaka").format("hh:mm A");
-const day = moment.tz("Asia/Dhaka").format("dddd");
+const now = moment.tz("Asia/Dhaka");
+
+const date = now.format("DD MMMM YYYY");
+const time = now.format("hh:mm A");
+const day = now.format("dddd");
 
 const WIDTH = 900;
 const HEIGHT = 1100;
@@ -32,36 +34,27 @@ encoder.createReadStream().pipe(fs.createWriteStream(path));
 
 encoder.start();
 encoder.setRepeat(0);
-encoder.setDelay(120);
+encoder.setDelay(90);
 encoder.setQuality(10);
 
-// অনেক color
-const colors = [
- "#FF0000",
- "#00FFFF",
- "#00FF00",
- "#FFFF00",
- "#FF00FF",
- "#0066FF",
- "#FFA500"
-];
+for (let i = 0; i < 40; i++) {
 
-for (let c = 0; c < colors.length; c++) {
+let hue = i * 9;
+let color = `hsl(${hue},100%,50%)`;
 
-let color = colors[c];
-
-// Background
+// Background gradient
 let gradient = ctx.createRadialGradient(
  WIDTH/2, HEIGHT/2, 100,
  WIDTH/2, HEIGHT/2, 600
 );
+
 gradient.addColorStop(0, "#001010");
 gradient.addColorStop(1, "#000000");
 
 ctx.fillStyle = gradient;
 ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-// Neon frame
+// Outer neon glow frame
 ctx.shadowColor = color;
 ctx.shadowBlur = 40;
 ctx.lineWidth = 15;
@@ -89,6 +82,7 @@ ctx.fillText(date, WIDTH / 2, 400);
 // Calendar
 ctx.font = "38px Arial";
 const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
 ctx.fillStyle = color;
 
 let x = 120;
@@ -100,8 +94,8 @@ days.forEach(d => {
 });
 
 // Dates
-let firstDay = moment().startOf("month").day();
-let totalDays = moment().daysInMonth();
+let firstDay = now.clone().startOf("month").day();
+let totalDays = now.daysInMonth();
 
 x = 120;
 y = 570;
@@ -110,7 +104,7 @@ for (let i = 0; i < firstDay; i++) x += 110;
 
 for (let d = 1; d <= totalDays; d++) {
 
- if (d === moment().date()) {
+ if (d === now.date()) {
 
   ctx.beginPath();
   ctx.arc(x, y - 30, 42, 0, Math.PI * 2);
@@ -138,11 +132,11 @@ for (let d = 1; d <= totalDays; d++) {
 
 }
 
-// footer
 ctx.font = "40px Arial Black";
 ctx.fillStyle = color;
 ctx.shadowColor = color;
 ctx.shadowBlur = 25;
+
 ctx.fillText("Rahat Bot", WIDTH / 2, HEIGHT - 70);
 
 ctx.shadowBlur = 0;
