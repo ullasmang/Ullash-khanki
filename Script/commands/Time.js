@@ -8,7 +8,7 @@ module.exports.config = {
  version: "5.0",
  hasPermssion: 0,
  credits: "Rahat Bot",
- description: "Neon GIF Time",
+ description: "Neon Calendar Time GIF",
  commandCategory: "Info",
  cooldowns: 1
 };
@@ -22,75 +22,147 @@ const day = moment.tz("Asia/Dhaka").format("dddd");
 const WIDTH = 900;
 const HEIGHT = 1100;
 
-const encoder = new GIFEncoder(WIDTH, HEIGHT);
 const canvas = createCanvas(WIDTH, HEIGHT);
 const ctx = canvas.getContext("2d");
 
+const encoder = new GIFEncoder(WIDTH, HEIGHT);
 const path = __dirname + "/cache/rahat_time.gif";
-const stream = encoder.createReadStream().pipe(fs.createWriteStream(path));
+
+encoder.createReadStream().pipe(fs.createWriteStream(path));
 
 encoder.start();
 encoder.setRepeat(0);
-encoder.setDelay(400);
+encoder.setDelay(120);
 encoder.setQuality(10);
 
-const colors = ["#FF0000", "#0066FF"]; // red & blue glow
+// অনেক color
+const colors = [
+ "#FF0000",
+ "#00FFFF",
+ "#00FF00",
+ "#FFFF00",
+ "#FF00FF",
+ "#0066FF",
+ "#FFA500"
+];
 
-for (let i = 0; i < 6; i++) {
+for (let c = 0; c < colors.length; c++) {
 
-const glow = colors[i % 2];
+let color = colors[c];
 
-// background
-ctx.fillStyle = "#000000";
+// Background
+let gradient = ctx.createRadialGradient(
+ WIDTH/2, HEIGHT/2, 100,
+ WIDTH/2, HEIGHT/2, 600
+);
+gradient.addColorStop(0, "#001010");
+gradient.addColorStop(1, "#000000");
+
+ctx.fillStyle = gradient;
 ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-// neon frame
-ctx.shadowColor = glow;
+// Neon frame
+ctx.shadowColor = color;
 ctx.shadowBlur = 40;
-ctx.lineWidth = 12;
-ctx.strokeStyle = glow;
+ctx.lineWidth = 15;
+ctx.strokeStyle = color;
 ctx.strokeRect(40, 40, WIDTH - 80, HEIGHT - 80);
 
 ctx.shadowBlur = 0;
 
-// time
+// TIME
 ctx.font = "110px Arial Black";
 ctx.fillStyle = "#FFFFFF";
 ctx.textAlign = "center";
 ctx.fillText(time, WIDTH / 2, 220);
 
-// day
+// DAY
 ctx.font = "80px Arial Black";
-ctx.fillStyle = glow;
+ctx.fillStyle = color;
 ctx.fillText(day.toUpperCase(), WIDTH / 2, 330);
 
-// date
+// DATE
 ctx.font = "45px Arial";
 ctx.fillStyle = "#CFCFCF";
 ctx.fillText(date, WIDTH / 2, 400);
 
+// Calendar
+ctx.font = "38px Arial";
+const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+ctx.fillStyle = color;
+
+let x = 120;
+let y = 500;
+
+days.forEach(d => {
+ ctx.fillText(d, x, y);
+ x += 110;
+});
+
+// Dates
+let firstDay = moment().startOf("month").day();
+let totalDays = moment().daysInMonth();
+
+x = 120;
+y = 570;
+
+for (let i = 0; i < firstDay; i++) x += 110;
+
+for (let d = 1; d <= totalDays; d++) {
+
+ if (d === moment().date()) {
+
+  ctx.beginPath();
+  ctx.arc(x, y - 30, 42, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.fill();
+
+  ctx.font = "45px Arial Black";
+  ctx.fillStyle = "#000";
+  ctx.fillText(d, x, y - 15);
+
+ } else {
+
+  ctx.font = "42px Arial";
+  ctx.fillStyle = "#D0D0D0";
+  ctx.fillText(d, x, y - 15);
+
+ }
+
+ x += 110;
+
+ if (x > 800) {
+  x = 120;
+  y += 100;
+ }
+
+}
+
 // footer
-ctx.shadowColor = glow;
-ctx.shadowBlur = 25;
 ctx.font = "40px Arial Black";
-ctx.fillStyle = glow;
+ctx.fillStyle = color;
+ctx.shadowColor = color;
+ctx.shadowBlur = 25;
 ctx.fillText("Rahat Bot", WIDTH / 2, HEIGHT - 70);
 
 ctx.shadowBlur = 0;
 
 encoder.addFrame(ctx);
-
 }
 
 encoder.finish();
 
-stream.on("finish", () => {
+setTimeout(() => {
 
-api.sendMessage({
-body: `⏱️ সময় ${time}\n🗓️ তারিখ ${date}`,
-attachment: fs.createReadStream(path)
-}, event.threadID, () => fs.unlinkSync(path));
+api.sendMessage(
+{
+ body: `⏱️ সময় ${time}\n🗓️ তারিখ ${date}`,
+ attachment: fs.createReadStream(path)
+},
+event.threadID,
+() => fs.unlinkSync(path)
+);
 
-});
+}, 1000);
 
 };
