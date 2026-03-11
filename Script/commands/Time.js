@@ -1,20 +1,39 @@
-// Example Mirai Bot command
-var apiUrl = "https://rahat-time-api.onrender.com/time";
+const request = require("request");
+const fs = require("fs-extra"); // fs-extra ব্যবহার করা ভালো কারণ unlinkSync এর আগে চেক করা যায়
 
-var request = require("request");
-var fs = require("fs");
+module.exports.config = {
+    name: "time", // কমান্ডের নাম
+    version: "1.0",
+    hasPermssion: 0,
+    credits: "Rahat Bot",
+    description: "নিয়মিত সময় + তারিখের GIF দেখায়",
+    commandCategory: "utility",
+    cooldowns: 5
+};
 
-request({ url: apiUrl, encoding: null }, function(err, response, body) {
-    if (err) return console.log(err);
+module.exports.run = async ({ event, api }) => {
+    const apiUrl = "https://rahat-time-api.onrender.com/time";
+    const path = "./cache/rahat_time.gif";
 
-    fs.writeFileSync("./cache/rahat_time.gif", body);
+    try {
+        request({ url: apiUrl, encoding: null }, function (err, response, body) {
+            if (err) return api.sendMessage("⚠️ API তে সমস্যা হয়েছে!", event.threadID);
 
-    Api.sendMessage(
-        {
-            body: "⏱️ সময় + 🗓️ তারিখ",
-            attachment: fs.createReadStream("./cache/rahat_time.gif")
-        },
-        event.threadID,
-        () => fs.unlinkSync("./cache/rahat_time.gif")
-    );
-});
+            fs.writeFileSync(path, body);
+
+            api.sendMessage(
+                {
+                    body: "⏱️ সময় + 🗓️ তারিখ",
+                    attachment: fs.createReadStream(path)
+                },
+                event.threadID,
+                () => {
+                    if (fs.existsSync(path)) fs.unlinkSync(path); // GIF পাঠানোর পরে ডিলিট
+                }
+            );
+        });
+    } catch (error) {
+        console.error(error);
+        api.sendMessage("❌সমস্যা হচ্ছে", event.threadID);
+    }
+};
